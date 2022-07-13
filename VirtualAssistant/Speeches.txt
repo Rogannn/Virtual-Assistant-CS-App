@@ -1,0 +1,14 @@
+﻿hello
+hi
+greetings
+how are you
+what time is it
+what is the current time
+start
+stop talking
+stop listening
+show speeches
+show available speeches
+what are the available speeches
+hide speeches
+hide it

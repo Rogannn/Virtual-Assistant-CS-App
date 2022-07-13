@@ -1,0 +1,11 @@
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\obj\Debug\VirtualAssistant.csproj.AssemblyReference.cache
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\obj\Debug\VirtualAssistant.Form1.resources
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\obj\Debug\VirtualAssistant.Properties.Resources.resources
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\obj\Debug\VirtualAssistant.csproj.GenerateResource.cache
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\obj\Debug\VirtualAssistant.csproj.CoreCompileInputs.cache
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\bin\Debug\Speeches.txt
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\bin\Debug\VirtualAssistant.exe.config
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\bin\Debug\VirtualAssistant.exe
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\bin\Debug\VirtualAssistant.pdb
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\obj\Debug\VirtualAssistant.exe
+C:\Users\rogel\source\repos\VirtualAssistant\VirtualAssistant\obj\Debug\VirtualAssistant.pdb
