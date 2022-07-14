@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Speech.Recognition;
 using System.Speech.Synthesis;
 using System.IO;
+using System.Reflection;
 
 namespace VirtualAssistant
 {
@@ -21,7 +22,6 @@ namespace VirtualAssistant
         // this is optional, only to be able to start and stop the speech recognition
         SpeechRecognitionEngine startListening = new SpeechRecognitionEngine();
 
-        Random rand = new Random();
         // so the assistant will be able to respond to a new speech after a period of time
         int RecTimeOut = 0;
 
@@ -34,6 +34,7 @@ namespace VirtualAssistant
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            tableLayoutPanel1.Paint += new PaintEventHandler(this.tableLayoutPanel1_Paint);
             _recognizer.SetInputToDefaultAudioDevice();
             _recognizer.LoadGrammarAsync(
                 new Grammar(
@@ -54,119 +55,152 @@ namespace VirtualAssistant
                         new Choices(File.ReadAllLines(@"Speeches.txt")))));
             startListening.SpeechRecognized += new EventHandler
                 <SpeechRecognizedEventArgs>(startListening_SpeechRecognized);
+
+            AssistantSpeechBubble("Is this the start?");
+            UserSpeechBubble("Maybe");
+            AssistantSpeechBubble("I don't think so");
+            UserSpeechBubble("ye");
+            AssistantSpeechBubble("What the fuck are you talking about?");
+            UserSpeechBubble("You dumb");
         }
 
         private void Default_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
         {
-            int randNum;
             string speech = e.Result.Text;
             UserSpeechBubble(speech);
-
-            if (speech == "hello" || speech == "hi" || speech == "greetings")
+            string[] GratitudeResponses = { "Your Welcome.", "No Problem." };
+            string[] StoppedResponses = { "Ok.", "Yes?" };
+            Random random = new Random();
+            switch (speech)
             {
-                string voice = "Hello, I am your Virtual Assistant. \nHow can I help you?";
-                AssistantSpeechBubble(voice, true);
-            }
-            if (speech == "how are you")
-            {
-                string voice = "I am working fine, thank you for asking.";
-                AssistantSpeechBubble(voice, true);
-            }
-            if (speech == "what time is it" || speech == "what is the current time")
-            {
-                // string getTime = DateTime.Now.ToString("h: mm tt");
-                string getTime = DateTime.Now.ToString("h: mm tt");
-                string est = "";
-                if (getTime.Contains("pm"))
-                {
-                    est = " in the evening.";
-                }
-                if (getTime.Contains("am"))
-                {
-                    est = " in the morning.";
-                }
-                string voice = "It is currently " + getTime + est;
-                AssistantSpeechBubble(voice, true);
-            }
-            // to abruptly stop the voice from speaking
-            if (speech == "stop talking")
-            {
-                VoiceAssistant.SpeakAsyncCancelAll();
-                // randomly choose which voice to respond
-                randNum = rand.Next(1, 2);
-                if (randNum == 1)
-                {
-                    string voice = "Ok.";
-                    AssistantSpeechBubble(voice, true);
-                }
-                if (randNum == 2)
-                {
-                    string voice = "Yes?";
-                    AssistantSpeechBubble(voice, true);
-                }
-            }
-            if (speech == "stop listening")
-            {
-                string voice = "I will shut my ears now. Just say \"Start\" and I will hear you again.";
-                AssistantSpeechBubble(voice, true);
-                _recognizer.RecognizeAsyncCancel();
-                startListening.RecognizeAsync(RecognizeMode.Multiple);
-            }
-            if (speech == "show speeches" || speech == "show available speeches" || speech == "what are the available speeches")
-            {
-                string voice = "Showing all the available speeches..";
-                AssistantSpeechBubble(voice, true);
-                string[] speeches = (File.ReadAllLines(@"Speeches.txt"));
-                ListCommands.Items.Clear();
-                ListCommands.SelectionMode = SelectionMode.None;
-                ListCommands.Visible = true;
-                foreach (string items in speeches)
-                {
-                    ListCommands.Items.Add(items);
-                }
-            }
-            if (speech == "hide speeches" || speech == "hide it")
-            {
-                ListCommands.Visible = false;
-                string voice = "Speeches has been hidden.";
-                AssistantSpeechBubble(voice, true);
+                case "hello":
+                case "hi":
+                case "greetings":
+                    AssistantSpeechBubble("Hello, I am your Virtual Assistant. \nHow can I help you?");
+                    break;
+                case "how are you":
+                    AssistantSpeechBubble("I am working fine, thank you for asking.");
+                    break;
+                case "what time is it":
+                case "what is the current time":
+                    string getTime = DateTime.Now.ToString("h: mm tt");
+                    string est = "";
+                    if (getTime.Contains("pm"))
+                    {
+                        est = " in the evening.";
+                    }
+                    if (getTime.Contains("am"))
+                    {
+                        est = " in the morning.";
+                    }
+                    string voice = "It is currently " + getTime + est;
+                    AssistantSpeechBubble(voice);
+                    break;
+                case "thanks":
+                case "thank you":
+                    int resForGratitude = random.Next(GratitudeResponses.Length);
+                    AssistantSpeechBubble(GratitudeResponses[resForGratitude]);
+                    break;
+                case "stop talking":
+                    // abruptly stop the voice from speaking
+                    VoiceAssistant.SpeakAsyncCancelAll();
+                    int resForStop = random.Next(StoppedResponses.Length);
+                    AssistantSpeechBubble(StoppedResponses[resForStop]);
+                    break;
+                case "stop listening":
+                    // temporarily stop to recognize speeches
+                    AssistantSpeechBubble("I will shut my ears now. Just say \"Start\" and I will hear you again.");
+                    _recognizer.RecognizeAsyncCancel();
+                    startListening.RecognizeAsync(RecognizeMode.Multiple);
+                    break;
+                case "show speeches":
+                case "show available speeches":
+                case "what are the available speeches":
+                    AssistantSpeechBubble("Showing all the available speeches..");
+                    string[] speeches = (File.ReadAllLines(@"Speeches.txt"));
+                    ListCommands.Items.Clear();
+                    ListCommands.SelectionMode = SelectionMode.None;
+                    ListCommands.Visible = true;
+                    foreach (string items in speeches)
+                    {
+                        ListCommands.Items.Add(items);
+                    }
+                    break;
+                case "what are the available courses":
+                case "show available courses":
+                case "available courses":
+                case "courses":
+                case "course":
+                    AssistantSpeechBubble("COURSES AVAILABLE IN DHVSU PORAC CAMPUS\n" +
+                        "Bachelor of Elementary Education Major in General Education\n" +
+                        "Bachelor of Science in Business Administration Major in Marketing\n" +
+                        "Bachelor of Science in Information Technology\n" +
+                        "Bachelor of Science in Social Work");
+                    break;
+                case "hide speeches":
+                case "hide it":
+                    ListCommands.Visible = false;
+                    AssistantSpeechBubble("Speeches has been hidden.");
+                    break;
             }
         }
 
+        public static class MessagePosition
+        {
+            public static int AssistantRow = 0;
+            public static int UserRow = 1;
+        }
         private void UserSpeechBubble(string words)
         {
             Label Bubble = new Label();
             Bubble.Text = words;
 
-            Bubble.Margin = new Padding(13, 13, 150, 13);
-            Bubble.Padding = new Padding(8, 15, 8, 15);
+            Bubble.Margin = new Padding(5);
+            Bubble.Padding = new Padding(5, 15, 5, 15);
             Bubble.Anchor = AnchorStyles.Left;
             Bubble.BackColor = Color.DodgerBlue;
             Bubble.Size = new Size(135, 33);
             Bubble.ForeColor = SystemColors.Control;
             Bubble.AutoSize = true;
-            Bubble.Font = new Font("Elephant", 12F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
+            Bubble.Font = new Font("Candara", 12F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
 
-            flowLayoutPanel1.Controls.Add(Bubble);
+            tableLayoutPanel1.Controls.Add(Bubble, 1, MessagePosition.AssistantRow);
+            Controls.Add(tableLayoutPanel1);
             Console.WriteLine("User said: " + words);
+            MessagePosition.AssistantRow = MessagePosition.AssistantRow + 1;
+
+            tableLayoutPanel1.ScrollControlIntoView(Bubble);
         }
-        private void AssistantSpeechBubble(string words, bool show)
+        private void AssistantSpeechBubble(string words)
         {
             Label Bubble = new Label();
             Bubble.Text = words;
 
-            Bubble.Margin = new Padding(150, 13, 13, 13);
-            Bubble.Padding = new Padding(8, 15, 8, 15);
+            Bubble.Margin = new Padding(5);
+            Bubble.Padding = new Padding(5, 15, 5, 15);
             Bubble.Anchor = AnchorStyles.Right;
-            Bubble.BackColor = Color.SteelBlue;
+            Bubble.BackColor = Color.LightSeaGreen;
             Bubble.Size = new Size(135, 33);
             Bubble.ForeColor = SystemColors.Control;
             Bubble.AutoSize = true;
-            Bubble.Font = new Font("Elephant", 12F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
+            Bubble.Font = new Font("Candara", 12F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
 
-            flowLayoutPanel1.Controls.Add(Bubble);
+            tableLayoutPanel1.Controls.Add(Bubble, 1, MessagePosition.AssistantRow);
+            Controls.Add(tableLayoutPanel1);
             VoiceAssistant.SpeakAsync(words);
-            Console.WriteLine("Voice Assistant said: " + words);
+            Console.WriteLine("Assistant said: " + words);
+            MessagePosition.AssistantRow = MessagePosition.AssistantRow + 1;
+
+            tableLayoutPanel1.ScrollControlIntoView(Bubble);
+        }
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
+            Color color = Color.Orange;
+            ButtonBorderStyle bbs = ButtonBorderStyle.Solid;
+            int thiccness = 4;
+            ControlPaint.DrawBorder(e.Graphics, this.tableLayoutPanel1.ClientRectangle,
+                color, thiccness, bbs, color, thiccness, bbs, color, thiccness, bbs, color, thiccness, bbs);
         }
 
         private void _recognizer_SpeechRecognized(object sender, SpeechDetectedEventArgs e)
@@ -179,7 +213,7 @@ namespace VirtualAssistant
             if (speech == "start")
             {
                 startListening.RecognizeAsyncCancel();
-                VoiceAssistant.SpeakAsync("Greetings, I am back. What can I do for you?");
+                AssistantSpeechBubble("Greetings, I am back. What can I do for you?");
                 _recognizer.RecognizeAsync(RecognizeMode.Multiple);
             }
         }
@@ -203,5 +237,29 @@ namespace VirtualAssistant
             SpeakBar.Value = e.AudioLevel;
         }
 
+        private void DevModeButton_Click(object sender, EventArgs e)
+        {
+            if (SpeakBar.Visible == true && ListCommands.Visible == true)
+            {
+                SpeakBar.Visible = false;
+                ListCommands.Visible = false;
+            } else
+            {
+                SpeakBar.Visible = true;
+                string[] speeches = (File.ReadAllLines(@"Speeches.txt"));
+                ListCommands.Items.Clear();
+                ListCommands.SelectionMode = SelectionMode.None;
+                ListCommands.Visible = true;
+                foreach (string items in speeches)
+                {
+                    ListCommands.Items.Add(items);
+                }
+            }
+        }
+
+        private void SpeakBar_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
